@@ -33,12 +33,12 @@ apk add curl bash python3  # or jq instead of python3
 
 **Install (one-liner):**
 ```sh
-curl -fsSL https://raw.githubusercontent.com/kksnow/urnetwork-connect/main/scripts/Provider_Install_Linux.sh | sh
+curl -fsSL https://raw.githubusercontent.com/kksnow/urnetwork-connect/main/scripts/Provider_Install_Linux.sh -o /tmp/urnetwork-install.sh && sh /tmp/urnetwork-install.sh
 ```
 
 **Or with wget:**
 ```sh
-wget -qO- https://raw.githubusercontent.com/kksnow/urnetwork-connect/main/scripts/Provider_Install_Linux.sh | sh
+wget -qO /tmp/urnetwork-install.sh https://raw.githubusercontent.com/kksnow/urnetwork-connect/main/scripts/Provider_Install_Linux.sh && sh /tmp/urnetwork-install.sh
 ```
 
 **Post-install:**
