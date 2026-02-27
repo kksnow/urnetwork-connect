@@ -22,6 +22,61 @@ Anywhere in the code that returns a `[]byte` will allocate it from the shared me
 - When passing a `[]byte` to a callback, the callback should assume the `[]byte` is valid only for the duration of the function call. The caller will return the `[]byte` to the message pool after the callbacks are processed.
 
 
+## Installation
+
+### Linux / Proxmox LXC / Alpine Linux
+
+**Prerequisites (Alpine):**
+```sh
+apk add curl bash python3  # or jq instead of python3
+```
+
+**Install (one-liner):**
+```sh
+curl -fsSL https://raw.githubusercontent.com/kksnow/urnetwork-connect/main/scripts/Provider_Install_Linux.sh | sh
+```
+
+**Or with wget:**
+```sh
+wget -qO- https://raw.githubusercontent.com/kksnow/urnetwork-connect/main/scripts/Provider_Install_Linux.sh | sh
+```
+
+**Post-install:**
+```sh
+source ~/.bashrc           # Reload PATH
+urnetwork auth             # Authenticate (get code from https://ur.io)
+urnet-tools start          # Start provider
+urnet-tools status         # Check status
+```
+
+**Optional flags:**
+```sh
+# Install specific version
+... | sh -s -- -t=v1.2.0
+
+# Skip bashrc modification
+... | sh -s -- -B
+
+# Custom install path
+... | sh -s -- -i /opt/urnetwork
+```
+
+**Non-systemd environments (LXC/Alpine):** Auto-start and auto-update configured via cron.
+
+### Management Commands
+
+| Command | Description |
+|---------|-------------|
+| `urnet-tools start` | Start provider |
+| `urnet-tools stop` | Stop provider |
+| `urnet-tools status` | Show status |
+| `urnet-tools update` | Update to latest version |
+| `urnet-tools reinstall` | Reinstall |
+| `urnet-tools uninstall` | Remove installation |
+| `urnet-tools auto-start on\|off` | Enable/disable auto-start |
+| `urnet-tools auto-update on\|off` | Enable/disable auto-update |
+
+
 ## Discord
 
 [https://discord.gg/urnetwork](https://discord.gg/urnetwork)
