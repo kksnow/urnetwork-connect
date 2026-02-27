@@ -47,7 +47,8 @@ show_help ()
         echo "  uninstall               Uninstall URnetwork"
         echo "  auto-update             Manage auto update settings.  If no argument is"
         echo "                          specified, it will print the current auto update state."
-		echo "  auto-start              Turn auto-start of URnetwork provider on login on or off"
+		echo "  auto-start              Turn auto-start of URnetwork provider on or off."
+		echo "                          Uses systemd if available, cron otherwise."
         echo ""
         echo "Options for reinstall:"
         echo "  -t, --tag=TAG           Reinstall a specific version of URnetwork."
@@ -59,6 +60,9 @@ show_help ()
         echo "Options for auto-update:"
         echo "  --interval=INTERVAL     Auto update interval.  Values can be:"
         echo "                          daily, weekly, monthly.  Defaults to daily."
+        echo ""
+        echo "Note: On systems without systemd (e.g. LXC containers), cron is"
+        echo "      used for auto-start and auto-update."
     fi
 
     echo ""
@@ -109,12 +113,14 @@ api_base="https://api.github.com/repos/urnetwork/connect"
 
 install_path="$HOME/.local/share/urnetwork-provider"
 version_file="$install_path/.version"
+pid_file="$install_path/.pid"
+log_file="$install_path/provider.log"
 
 if [ -z "$URNETWORK_TOOLS_MODE" ]; then
     operation="install"
 fi
 
-if command -v systemctl > /dev/null; then
+if command -v systemctl > /dev/null && [ -d /run/systemd/system ]; then
     has_systemd=1
 fi
 
@@ -220,7 +226,57 @@ network_fetch ()
     fi
 }
 
-show_version () 
+# PID file helpers for non-systemd environments
+is_running ()
+{
+    if [ -f "$pid_file" ]; then
+        pid="$(cat "$pid_file")"
+        if kill -0 "$pid" 2>/dev/null; then
+            # Verify PID belongs to urnetwork
+            if [ -f "/proc/$pid/cmdline" ] && \
+               tr '\0' ' ' < "/proc/$pid/cmdline" | grep -q "urnetwork provide"; then
+                return 0
+            fi
+            # PID reused by another process
+            rm -f "$pid_file"
+            return 1
+        fi
+        # Stale PID file
+        rm -f "$pid_file"
+    fi
+    return 1
+}
+
+# Wait for a process to exit after sending SIGTERM, force-kill after timeout
+wait_for_exit ()
+{
+    pid="$1"
+    i=0
+    while kill -0 "$pid" 2>/dev/null && [ "$i" -lt 10 ]; do
+        sleep 1
+        i=$((i + 1))
+    done
+    kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
+}
+
+# Cron helpers for non-systemd environments
+cron_add_entry ()
+{
+    marker="$1"
+    entry="$2"
+
+    # Remove existing entry with this marker, then add new one
+    (crontab -l 2>/dev/null | grep -v "# $marker" || true; \
+     echo "$entry # $marker") | crontab -
+}
+
+cron_remove_entry ()
+{
+    marker="$1"
+    (crontab -l 2>/dev/null | grep -v "# $marker" || true) | crontab -
+}
+
+show_version ()
 {
     if [ ! -f "$version_file" ]; then
         pr_err "version file '$version_file' could not be found"
@@ -264,6 +320,9 @@ while [ $# -gt 0 ]; do
             fi
 
             install_path="$2"
+            version_file="$install_path/.version"
+            pid_file="$install_path/.pid"
+            log_file="$install_path/provider.log"
             shift 2
             ;;
 
@@ -594,6 +653,14 @@ do_install ()
         stop_systemd_units
     fi
 
+    if [ "$has_systemd" -eq 0 ] && is_running; then
+        pr_info "Stopping running provider before update"
+        pid="$(cat "$pid_file")"
+        kill "$pid" 2>/dev/null
+        wait_for_exit "$pid"
+        rm -f "$pid_file"
+    fi
+
     if [ -d "$install_path" ] && [ "$operation" = "install" ]; then
         pr_info "Found existing installation in $install_path, updating instead"
         operation=update
@@ -653,6 +720,10 @@ do_install ()
 
     if [ "$has_systemd" -eq 1 ]; then
         install_systemd_units
+    else
+        cron_add_entry "urnetwork-autostart" "@reboot $install_path/bin/urnet-tools start"
+        cron_add_entry "urnetwork-autoupdate" "0 3 * * * $install_path/bin/urnet-tools update"
+        pr_info "Auto-start and auto-update configured via cron"
     fi
 
     if [ "$no_modify_bashrc" -eq 0 ]; then
@@ -670,7 +741,9 @@ EOF
 	fi
     fi
 
-	loginctl enable-linger
+	if [ "$has_systemd" -eq 1 ]; then
+		loginctl enable-linger
+	fi
 
     case "$operation" in
         install)
@@ -684,9 +757,17 @@ EOF
                 printf "Start service:         \e[1msystemctl --user start urnetwork\e[0m\n"
                 printf "Disable service:       \e[1msystemctl --user disable urnetwork\e[0m\n"
                 printf "Disable auto-updates:  \e[1msystemctl --user disable urnetwork-update.timer\e[0m\n"
+            else
+                printf "Start service:         \e[1murnet-tools start\e[0m\n"
+                printf "Stop service:          \e[1murnet-tools stop\e[0m\n"
+                printf "Service status:        \e[1murnet-tools status\e[0m\n"
                 printf "\n"
-                printf "\e[1mRefer to <https://docs.ur.io/provider#linux-and-macos> for more detailed instructions.\e[0m\n"
+                printf "Auto-start configured via cron (@reboot)\n"
+                printf "Auto-update configured via cron (daily at 3:00 AM)\n"
             fi
+
+            printf "\n"
+            printf "\e[1mRefer to <https://docs.ur.io/provider#linux-and-macos> for more detailed instructions.\e[0m\n"
             ;;
 
         reinstall)
@@ -728,7 +809,14 @@ do_uninstall ()
     fi
 
     pr_info "Removing: %s" "$install_path"
-    
+
+    if is_running; then
+        pr_info "Stopping running provider before uninstall"
+        pid="$(cat "$pid_file")"
+        kill "$pid" 2>/dev/null
+        wait_for_exit "$pid"
+    fi
+
     if ! rm -r "$install_path"; then
         pr_err "Failed to completely remove '%s'" "$install_path"
         exit 1
@@ -744,6 +832,10 @@ do_uninstall ()
         rm -f "$HOME/.config/systemd/user/urnetwork.service"
         rm -f "$HOME/.config/systemd/user/urnetwork-update.service"
         rm -f "$HOME/.config/systemd/user/urnetwork-update.timer"
+    else
+        cron_remove_entry "urnetwork-autostart"
+        cron_remove_entry "urnetwork-autoupdate"
+        pr_info "Removed cron entries"
     fi
 
     if [ "$no_modify_bashrc" -eq 0 ]; then
@@ -806,8 +898,8 @@ change_auto_update_prefs ()
     done
 
     if [ "$has_systemd" -eq 0 ]; then
-        pr_err "This system doesn't seem to have systemd"
-        exit 1
+        change_auto_update_cron "$mode" "$interval"
+        return
     fi
 
     state="$(systemctl --user is-enabled urnetwork-update.timer)"
@@ -852,6 +944,48 @@ change_auto_update_prefs ()
     esac
 }
 
+toggle_auto_start_cron ()
+{
+    marker="urnetwork-autostart"
+
+    if [ "$1" = "on" ]; then
+        pr_info "Enabling auto-start via cron (@reboot)"
+        cron_add_entry "$marker" "@reboot $install_path/bin/urnet-tools start"
+    elif [ "$1" = "off" ]; then
+        pr_info "Disabling auto-start via cron"
+        cron_remove_entry "$marker"
+    fi
+}
+
+change_auto_update_cron ()
+{
+    mode="$1"
+    interval="$2"
+    marker="urnetwork-autoupdate"
+
+    if [ -z "$mode" ]; then
+        if crontab -l 2>/dev/null | grep -q "# $marker"; then
+            pr_info "Auto update: enabled (cron)"
+        else
+            pr_info "Auto update: disabled"
+        fi
+        return
+    fi
+
+    if [ "$mode" = "on" ]; then
+        case "$interval" in
+            daily)   schedule="0 3 * * *" ;;
+            weekly)  schedule="0 3 * * 0" ;;
+            monthly) schedule="0 3 1 * *" ;;
+        esac
+        pr_info "Enabling auto-update via cron (%s)" "$interval"
+        cron_add_entry "$marker" "$schedule $install_path/bin/urnet-tools update"
+    elif [ "$mode" = "off" ]; then
+        pr_info "Disabling auto-update via cron"
+        cron_remove_entry "$marker"
+    fi
+}
+
 toggle_auto_start ()
 {
 	if test -z "$1"; then
@@ -862,6 +996,11 @@ toggle_auto_start ()
 	if test "$1" != on && test "$1" != off; then
 		pr_err "Invalid value: %s, must be either on or off" "$1"
 		exit 1
+	fi
+
+	if [ "$has_systemd" -eq 0 ]; then
+		toggle_auto_start_cron "$1"
+		return
 	fi
 
 	if test "$1" = on; then
@@ -883,8 +1022,27 @@ toggle_auto_start ()
 	fi
 }
 
+do_start_pid ()
+{
+    if is_running; then
+        pr_info "URnetwork provider is already running (PID: %s)" "$(cat "$pid_file")"
+        exit 1
+    fi
+
+    pr_info "Starting URnetwork provider (PID mode)"
+    nohup "$install_path/bin/urnetwork" provide >> "$log_file" 2>&1 &
+    echo "$!" > "$pid_file"
+    pr_info "Started with PID %s" "$!"
+    pr_info "Logs: %s" "$log_file"
+}
+
 do_start ()
 {
+    if [ "$has_systemd" -eq 0 ]; then
+        do_start_pid
+        return
+    fi
+
     if ! systemctl --user is-active --quiet urnetwork.service; then
 		pr_info "Starting urnetwork.service"
 		systemctl --user start urnetwork.service || { pr_err "Failed to start urnetwork.service"; exit 1; }
@@ -894,8 +1052,27 @@ do_start ()
     fi
 }
 
+do_stop_pid ()
+{
+    if ! is_running; then
+        pr_info "URnetwork provider is not running"
+        exit 1
+    fi
+
+    pid="$(cat "$pid_file")"
+    pr_info "Stopping URnetwork provider (PID: %s)" "$pid"
+    kill "$pid" 2>/dev/null
+    wait_for_exit "$pid"
+    rm -f "$pid_file"
+}
+
 do_stop ()
 {
+    if [ "$has_systemd" -eq 0 ]; then
+        do_stop_pid
+        return
+    fi
+
     if systemctl --user is-active --quiet urnetwork.service; then
 		pr_info "Stopping urnetwork.service"
 		systemctl --user stop urnetwork.service || { pr_err "Failed to stop urnetwork.service"; exit 1; }
@@ -905,8 +1082,25 @@ do_stop ()
     fi
 }
 
+show_status_pid ()
+{
+    if is_running; then
+        pid="$(cat "$pid_file")"
+        pr_info "URnetwork provider is running (PID: %s)" "$pid"
+        pr_info "Mode: PID file"
+    else
+        pr_info "URnetwork provider is not running"
+        pr_info "Mode: PID file"
+    fi
+}
+
 show_status ()
 {
+    if [ "$has_systemd" -eq 0 ]; then
+        show_status_pid
+        return
+    fi
+
 	systemctl --user status urnetwork.service
 }
 
