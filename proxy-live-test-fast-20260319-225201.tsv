@@ -1,0 +1,100 @@
+OK	001	164.92.65.114
+OK	002	66.42.68.94
+OK	003	73.242.109.217
+OK	004	170.124.117.116
+FAIL	005	HTTP:000	curl: (35) OpenSSL SSL_connect: SSL_ERROR_SYSCALL in connection to api.ipify.org:443 
+FAIL	006	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+OK	007	45.32.68.25
+OK	008	147.182.200.152
+OK	009	104.12.79.118
+OK	010	192.204.98.72
+OK	011	144.202.93.160
+OK	012	192.204.101.163
+OK	013	98.50.111.92
+OK	014	139.60.68.82
+OK	015	151.145.168.54
+OK	016	64.23.188.146
+OK	017	54.151.45.90
+OK	018	38.165.45.71
+OK	019	137.220.35.211
+FAIL	020	HTTP:000	curl: (28) Connection timed out after 12005 milliseconds
+FAIL	021	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+OK	022	192.204.100.189
+FAIL	023	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+FAIL	024	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+FAIL	025	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+FAIL	026	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+OK	027	73.110.193.92
+OK	028	216.26.226.47
+FAIL	029	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+FAIL	030	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+FAIL	031	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+FAIL	032	HTTP:000	curl: (28) Connection timed out after 12005 milliseconds
+FAIL	033	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+FAIL	034	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+OK	035	108.239.10.207
+OK	036	75.131.236.2
+FAIL	037	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+OK	038	67.219.22.239
+FAIL	039	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+OK	040	70.238.226.212
+OK	041	166.88.176.82
+FAIL	042	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+FAIL	043	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+FAIL	044	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+FAIL	045	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+FAIL	046	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+OK	047	107.173.111.100
+FAIL	048	HTTP:000	curl: (28) Connection timed out after 12001 milliseconds
+FAIL	049	HTTP:000	curl: (28) Connection timed out after 12001 milliseconds
+OK	050	4.246.103.216
+FAIL	051	HTTP:000	curl: (28) Connection timed out after 12005 milliseconds
+FAIL	052	HTTP:000	curl: (28) Connection timed out after 12005 milliseconds
+OK	053	137.184.90.133
+FAIL	054	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+OK	055	76.102.75.73
+OK	056	193.39.184.108
+OK	057	73.138.212.70
+FAIL	058	HTTP:000	curl: (28) Connection timed out after 12007 milliseconds
+FAIL	059	HTTP:000	curl: (28) Connection timed out after 12016 milliseconds
+OK	060	97.126.64.227
+FAIL	061	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+FAIL	062	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+FAIL	063	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+OK	064	100.2.143.67
+FAIL	065	HTTP:000	curl: (28) Connection timed out after 12007 milliseconds
+FAIL	066	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+FAIL	067	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+FAIL	068	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+FAIL	069	HTTP:000	curl: (28) Connection timed out after 12005 milliseconds
+FAIL	070	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+OK	071	192.204.98.95
+FAIL	072	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+FAIL	073	HTTP:000	curl: (28) Connection timed out after 12003 milliseconds
+FAIL	074	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+FAIL	075	HTTP:000	curl: (28) Connection timed out after 12001 milliseconds
+OK	076	64.23.135.172
+OK	077	192.204.103.220
+OK	078	166.88.172.186
+FAIL	079	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+FAIL	080	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+FAIL	081	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+FAIL	082	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+OK	083	45.63.68.24
+OK	084	164.92.76.133
+FAIL	085	HTTP:000	curl: (28) Connection timed out after 12000 milliseconds
+OK	086	144.126.214.64
+OK	087	162.253.42.51
+FAIL	088	HTTP:000	curl: (28) Connection timed out after 12002 milliseconds
+FAIL	089	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+FAIL	090	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+FAIL	091	HTTP:000	curl: (28) Connection timed out after 12005 milliseconds
+OK	092	137.184.227.85
+OK	093	69.48.201.200
+FAIL	094	HTTP:000	curl: (28) Connection timed out after 12004 milliseconds
+OK	095	64.227.98.81
+FAIL	096	HTTP:000	curl: (28) Connection timed out after 12006 milliseconds
+OK	097	147.182.236.117
+FAIL	098	HTTP:000	curl: (28) Connection timed out after 12005 milliseconds
+FAIL	099	HTTP:000	curl: (28) Connection timed out after 12005 milliseconds
+FAIL	100	HTTP:000	curl: (28) Connection timed out after 12005 milliseconds

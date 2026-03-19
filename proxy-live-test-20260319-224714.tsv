@@ -1,0 +1,17 @@
+OK	001	34.222.103.124
+FAIL	002	HTTP:000	curl: (28) Connection timed out after 20004 milliseconds
+OK	003	65.111.5.29
+OK	004	23.142.132.128
+FAIL	005	HTTP:000	curl: (28) Connection timed out after 20002 milliseconds
+OK	006	76.90.161.123
+OK	007	149.248.38.226
+OK	008	96.244.233.194
+OK	009	45.3.35.4
+FAIL	010	HTTP:000	curl: (28) Connection timed out after 20004 milliseconds
+FAIL	011	HTTP:000	curl: (28) Connection timed out after 20003 milliseconds
+FAIL	012	HTTP:000	curl: (28) Connection timed out after 20003 milliseconds
+FAIL	013	HTTP:000	curl: (28) Connection timed out after 20003 milliseconds
+OK	014	45.32.230.60
+OK	015	151.145.168.54
+FAIL	016	HTTP:000	curl: (28) Connection timed out after 20001 milliseconds
+OK	017	142.173.46.247
