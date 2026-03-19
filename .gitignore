@@ -3,9 +3,15 @@
 **/*.test
 **/profile
 .direnv
+.env
+!.env.example
 
 provider/provider
 connectctl/connectctl
 tetherctl/*.conf
 api/redoc-static.html
 security/ips.{go,txt}
+
+.by_jwt
+repomix-output.xml
+us-https-proxies*.md
