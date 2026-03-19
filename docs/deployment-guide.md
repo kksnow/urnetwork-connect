@@ -150,6 +150,45 @@ provider auth --user_auth=<email> --password=<password>
 
 ---
 
+## Proxy Batch Markdown Export (`scripts/urnet-proxy.sh`)
+
+Use this helper when you need a batch export of HTTPS proxy credentials in Markdown format.
+
+### Auth Sources
+
+`scripts/urnet-proxy.sh` will use the first available auth source:
+- JWT provided via environment
+- `~/.urnetwork_jwt`
+- `AUTH_CODE` or `auth_code` (for automatic code login)
+
+### Batch Command
+
+```bash
+# Option 1: explicit args
+./scripts/urnet-proxy.sh batch-md 100 us us-https-proxies.md
+
+# Option 2: defaults from .env
+./scripts/urnet-proxy.sh batch-md
+```
+
+### Batch Hardening Behavior
+
+| Behavior | Contract |
+|---------|----------|
+| Input validation | `count` must be a positive integer |
+| Capacity guard | Fails early if requested count exceeds available client slots (max 128) |
+| Retry policy | Retries transient API failures (`429`/`5xx`) and curl transient failures with backoff |
+| Retry config | Max attempts are bounded (default: `4`) |
+| Output hardening | Rejects symlink output paths and writes output with mode `600` |
+| Failure mode | Exits non-zero on mid-run failure and keeps partial output file |
+
+### Security Notes
+
+- Exported Markdown includes live auth tokens.
+- Keep export files out of git and handle as secrets.
+
+---
+
 ## Configuration
 
 ### File Locations

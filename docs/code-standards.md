@@ -120,6 +120,29 @@ glog.V(2).Info("trace message")
 
 ---
 
+## Shell Script Standards
+
+Use these rules for scripts under `scripts/` that handle auth tokens or batch API operations.
+
+### Safety Baseline
+
+- Start scripts with `set -euo pipefail`.
+- Use a single fatal helper (for example `die`) that writes to stderr and exits non-zero.
+
+### Input and Retry Contracts
+
+- Validate numeric inputs before arithmetic or loops.
+- Retry only transient failures (`429`, `5xx`, transport errors).
+- Keep retry count bounded and configurable via env var.
+
+### Sensitive Output Handling
+
+- Write credential-bearing files with mode `600`.
+- Refuse symlink output targets for generated secret artifacts.
+- If partial output is preserved on failure, exit non-zero and document the behavior in command help.
+
+---
+
 ## Concurrency Patterns
 
 ### Mutex Usage
